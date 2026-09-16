@@ -1251,6 +1251,147 @@ function startCountdown(duration, displayElement) {
 
 
 
+let currentContactType = 'tg';
+let otherContactsOpen = false;
+
+const CONTACT_TYPE_MAP = {
+    tg: {
+        btnId: 'btnContactTg',
+        icon: 'send',
+        placeholder: 'Telegram: @username',
+        prefix: 'Telegram: @',
+        stripRe: /^(Telegram:\s*@?|WhatsApp:\s*\+?|Email:\s*|IMO:\s*\+?|Viber:\s*\+?|Signal:\s*\+?|Discord:\s*|WeChat:\s*|Skype:\s*|Session:\s*|Телефон:\s*\+?)/i
+    },
+    wa: {
+        btnId: 'btnContactWa',
+        icon: 'chat',
+        placeholder: 'WhatsApp: +XXXXXXXXXXX',
+        prefix: 'WhatsApp: +',
+        stripRe: /^(Telegram:\s*@?|WhatsApp:\s*\+?|Email:\s*|IMO:\s*\+?|Viber:\s*\+?|Signal:\s*\+?|Discord:\s*|WeChat:\s*|Skype:\s*|Session:\s*|Телефон:\s*\+?)/i
+    },
+    email: {
+        btnId: 'btnContactEmail',
+        icon: 'mail',
+        placeholder: 'Email: name@example.com',
+        prefix: 'Email: ',
+        stripRe: /^(Telegram:\s*@?|WhatsApp:\s*\+?|Email:\s*|IMO:\s*\+?|Viber:\s*\+?|Signal:\s*\+?|Discord:\s*|WeChat:\s*|Skype:\s*|Session:\s*|Телефон:\s*\+?)/i
+    }
+};
+
+function _stripContactValue(value) {
+    return String(value || '')
+        .trim()
+        .replace(/^(Telegram:\s*@?|WhatsApp:\s*\+?|Email:\s*|IMO:\s*\+?|Viber:\s*\+?|Signal:\s*\+?|Discord:\s*|WeChat:\s*|Skype:\s*|Session:\s*|Телефон:\s*\+?)/i, '')
+        .replace(/^@/, '')
+        .replace(/^\+/, '')
+        .trim();
+}
+
+function _setContactTypeButtons(activeBtnId) {
+    document.querySelectorAll('.contact-type-btn').forEach((btn) => {
+        btn.classList.toggle('active', btn.id === activeBtnId);
+    });
+}
+
+function _setOtherContactsOpen(open) {
+    otherContactsOpen = open;
+    const grid = document.getElementById('otherContactsGrid');
+    const otherBtn = document.getElementById('btnContactOther');
+    if (grid) {
+        if (open) grid.removeAttribute('hidden');
+        else grid.setAttribute('hidden', '');
+    }
+    if (otherBtn) {
+        otherBtn.classList.toggle('is-open', open);
+        const expand = otherBtn.querySelector('.other-expand-icon');
+        if (expand) expand.textContent = open ? 'expand_less' : 'expand_more';
+    }
+}
+
+function _applyContactField({ icon, placeholder, prefix, keepValue = true }) {
+    const input = document.getElementById('contactInput');
+    const iconEl = document.getElementById('contactInputIcon');
+    if (iconEl && icon) iconEl.textContent = icon;
+    if (!input) return;
+
+    const raw = keepValue ? _stripContactValue(input.value) : '';
+    input.placeholder = placeholder || '';
+    if (prefix) {
+        if (prefix.endsWith('@')) {
+            input.value = raw ? `${prefix}${raw.replace(/^@/, '')}` : prefix;
+        } else if (prefix.endsWith('+')) {
+            input.value = raw ? `${prefix}${raw.replace(/^\+/, '')}` : prefix;
+        } else {
+            input.value = raw ? `${prefix}${raw}` : prefix;
+        }
+    } else if (!keepValue) {
+        input.value = '';
+    }
+    input.focus();
+    try {
+        const len = input.value.length;
+        input.setSelectionRange(len, len);
+    } catch (_) {}
+}
+
+function setContactType(type) {
+    const cfg = CONTACT_TYPE_MAP[type];
+    if (!cfg) return;
+
+    currentContactType = type;
+    _setOtherContactsOpen(false);
+    _setContactTypeButtons(cfg.btnId);
+
+    const otherBtnText = document.getElementById('otherBtnText');
+    const otherBtnIcon = document.getElementById('otherBtnIcon');
+    if (otherBtnText) otherBtnText.textContent = 'Другое';
+    if (otherBtnIcon) otherBtnIcon.textContent = 'more_horiz';
+
+    document.querySelectorAll('.other-contact-chip').forEach((chip) => chip.classList.remove('active'));
+
+    _applyContactField({
+        icon: cfg.icon,
+        placeholder: cfg.placeholder,
+        prefix: cfg.prefix,
+        keepValue: true
+    });
+}
+
+function toggleOtherContacts() {
+    const willOpen = !otherContactsOpen;
+    _setOtherContactsOpen(willOpen);
+    if (willOpen) {
+        currentContactType = 'other';
+        _setContactTypeButtons('btnContactOther');
+    } else if (currentContactType === 'other') {
+        // Keep "Other" selected, just collapse the grid
+        _setContactTypeButtons('btnContactOther');
+    }
+}
+
+function selectOtherContact(label, icon, placeholder, prefix) {
+    currentContactType = 'other';
+    _setOtherContactsOpen(false);
+    _setContactTypeButtons('btnContactOther');
+
+    const otherBtnText = document.getElementById('otherBtnText');
+    const otherBtnIcon = document.getElementById('otherBtnIcon');
+    if (otherBtnText) otherBtnText.textContent = label || 'Другое';
+    if (otherBtnIcon) otherBtnIcon.textContent = icon || 'more_horiz';
+
+    document.querySelectorAll('.other-contact-chip').forEach((chip) => {
+        const chipLabel = (chip.querySelector('span:last-child') || {}).textContent || '';
+        chip.classList.toggle('active', chipLabel === label);
+    });
+
+    _applyContactField({
+        icon: icon || 'alternate_email',
+        placeholder: placeholder || 'Контакт для связи...',
+        prefix: prefix || '',
+        keepValue: true
+    });
+}
+
 function toggleAnonMode(isAnon) {
     const contactGroup = document.getElementById('contactGroup');
     const contactInput = document.getElementById('contactInput');
@@ -1264,6 +1405,7 @@ function toggleAnonMode(isAnon) {
         if (isAnon) contactInput.value = '';
     }
     if (payerName && isAnon) payerName.value = '';
+    if (isAnon) _setOtherContactsOpen(false);
     // Sync checkbox state
     const chk = document.getElementById('anonCheckbox');
     if (chk && chk.checked !== isAnon) chk.checked = isAnon;

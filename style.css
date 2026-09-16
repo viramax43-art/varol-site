@@ -687,6 +687,20 @@ input:user-valid {
     transform: scale(1.1);
 }
 
+.contact-type-btn .other-expand-icon {
+    font-size: 14px;
+    opacity: 0.6;
+    transform: none !important;
+}
+
+.contact-type-btn.is-open .other-expand-icon {
+    opacity: 1;
+}
+
+.other-contacts-grid[hidden] {
+    display: none !important;
+}
+
 .contact-input-wrapper {
     position: relative;
     display: flex;
