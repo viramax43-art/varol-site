@@ -9,6 +9,15 @@ from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
 from typing import Optional
 from zoneinfo import ZoneInfo
 
+if os.path.exists(".env"):
+    with open(".env", "r", encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
+            if not line or line.startswith("#") or "=" not in line:
+                continue
+            k, v = line.split("=", 1)
+            os.environ.setdefault(k.strip(), v.strip())
+
 import aiohttp
 import db
 from admin_auth import ensure_admin_password, login as admin_login, logout as admin_logout, verify_admin
@@ -16,13 +25,6 @@ from fastapi import FastAPI, File, Form, HTTPException, Request, Response, Uploa
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import FileResponse, HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
-
-if os.path.exists(".env"):
-    with open(".env", "r", encoding="utf-8") as f:
-        for line in f:
-            if "=" in line and not line.startswith("#"):
-                k, v = line.strip().split("=", 1)
-                os.environ.setdefault(k, v.strip())
 
 UPLOADS_DIR = os.path.join(os.path.dirname(__file__), "uploads")
 os.makedirs(UPLOADS_DIR, exist_ok=True)
@@ -80,6 +82,10 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 
 BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "DUMMY_TOKEN")
 ADMIN_CHAT_ID = os.getenv("TELEGRAM_ADMIN_ID", "DUMMY_ID")
+ADMIN_PATH = os.getenv("ADMIN_PATH", "").strip()
+if not re.fullmatch(r"/[A-Za-z0-9_-]{12,128}", ADMIN_PATH):
+    raise RuntimeError("ADMIN_PATH must start with / and contain 12-128 URL-safe characters")
+ADMIN_API_PREFIX = f"/api{ADMIN_PATH}"
 GROUP_CHAT_ID = os.getenv("TELEGRAM_GROUP_ID", "-1004294029083").strip()
 
 DONATION_CATEGORIES = {"Донат: Анонимный взнос", "Донат: Персональный взнос"}
@@ -358,17 +364,17 @@ async def submit_payment(
 
     return JSONResponse(content={"status": "success", "tx_code": tx_code, "requisites": requisites, "expires_at": expires_at})
 
-@app.get("/admin", response_class=HTMLResponse)
+@app.get(ADMIN_PATH, response_class=HTMLResponse)
 async def read_admin():
     with open("admin.html", "r", encoding="utf-8") as f:
-        content = f.read()
+        content = f.read().replace("__ADMIN_API_PREFIX__", ADMIN_API_PREFIX)
     return HTMLResponse(
         content=content,
         headers={"Cache-Control": "no-store", "X-Robots-Tag": "noindex, nofollow"},
     )
 
 
-@app.post("/api/admin/login")
+@app.post(f"{ADMIN_API_PREFIX}/login")
 async def admin_login_route(request: Request, response: Response):
     body = await request.json()
     password = str(body.get("password") or "").strip()
@@ -378,19 +384,19 @@ async def admin_login_route(request: Request, response: Response):
     return {"status": "ok"}
 
 
-@app.post("/api/admin/logout")
+@app.post(f"{ADMIN_API_PREFIX}/logout")
 async def admin_logout_route(request: Request, response: Response):
     admin_logout(request, response)
     return {"status": "ok"}
 
-@app.post("/api/admin/set_anon_title")
+@app.post(f"{ADMIN_API_PREFIX}/set_anon_title")
 async def set_anon_title(request: Request):
     verify_admin(request)
     body = await request.json()
     db.set_setting("anon_title", body.get("title", "Анонимный взнос"))
     return {"status": "ok"}
 
-@app.get("/api/admin/data")
+@app.get(f"{ADMIN_API_PREFIX}/data")
 async def get_admin_data(request: Request):
     verify_admin(request)
     return {
@@ -407,14 +413,14 @@ async def get_admin_data(request: Request):
         "projects": db.get_all_projects(),
     }
 
-@app.post("/api/admin/toggle_bank")
+@app.post(f"{ADMIN_API_PREFIX}/toggle_bank")
 async def toggle_bank(request: Request):
     verify_admin(request)
     body = await request.json()
     db.toggle_bank_active(body.get("bank_id"), body.get("is_active"))
     return {"status": "ok"}
 
-@app.post("/api/admin/save_bank")
+@app.post(f"{ADMIN_API_PREFIX}/save_bank")
 async def save_bank(request: Request):
     verify_admin(request)
     body = await request.json()
@@ -428,7 +434,7 @@ async def save_bank(request: Request):
         db.add_bank("ALL", name, value, link_url)
     return {"status": "ok"}
 
-@app.post("/api/admin/reorder_banks")
+@app.post(f"{ADMIN_API_PREFIX}/reorder_banks")
 async def reorder_banks(request: Request):
     verify_admin(request)
     body = await request.json()
@@ -437,14 +443,14 @@ async def reorder_banks(request: Request):
         db.update_bank_order(bank_ids)
     return {"status": "ok"}
 
-@app.post("/api/admin/toggle_project")
+@app.post(f"{ADMIN_API_PREFIX}/toggle_project")
 async def toggle_project(request: Request):
     verify_admin(request)
     body = await request.json()
     db.toggle_project_active(body.get("project_id"), body.get("is_active", 1))
     return {"status": "ok"}
 
-@app.post("/api/admin/add_project")
+@app.post(f"{ADMIN_API_PREFIX}/add_project")
 async def add_project(request: Request):
     verify_admin(request)
     body = await request.json()
@@ -459,7 +465,7 @@ async def add_project(request: Request):
     )
     return {"status": "ok"}
 
-@app.post("/api/admin/reorder_projects")
+@app.post(f"{ADMIN_API_PREFIX}/reorder_projects")
 async def reorder_projects(request: Request):
     verify_admin(request)
     body = await request.json()
@@ -468,7 +474,7 @@ async def reorder_projects(request: Request):
         db.update_project_order(project_ids)
     return {"status": "ok"}
 
-@app.post("/api/admin/edit_project")
+@app.post(f"{ADMIN_API_PREFIX}/edit_project")
 async def edit_project(request: Request):
     verify_admin(request)
     body = await request.json()
@@ -484,7 +490,7 @@ async def edit_project(request: Request):
     )
     return {"status": "ok"}
 
-@app.post("/api/admin/delete_project")
+@app.post(f"{ADMIN_API_PREFIX}/delete_project")
 async def delete_project(request: Request):
     verify_admin(request)
     body = await request.json()
@@ -520,7 +526,7 @@ async def get_config():
         "projects": db.get_active_projects()
     }
 
-@app.post("/api/admin/set_own_project")
+@app.post(f"{ADMIN_API_PREFIX}/set_own_project")
 async def set_own_project(request: Request):
     verify_admin(request)
     body = await request.json()
@@ -539,7 +545,7 @@ async def set_own_project(request: Request):
         
     return {"status": "ok", "own_project_enabled": enabled}
 
-@app.post("/api/admin/set_feedback_manifest")
+@app.post(f"{ADMIN_API_PREFIX}/set_feedback_manifest")
 async def set_feedback_manifest(request: Request):
     verify_admin(request)
     body = await request.json()

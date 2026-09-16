@@ -11,6 +11,7 @@ import db
 
 SESSION_COOKIE = "varol_admin_session"
 SESSION_TTL_HOURS = int(os.getenv("ADMIN_SESSION_TTL_HOURS", "12"))
+MIN_PASSWORD_LENGTH = 20
 LOGIN_MAX_ATTEMPTS = 5
 LOGIN_WINDOW_SECONDS = 900
 LOGIN_BLOCK_SECONDS = 900
@@ -55,13 +56,24 @@ def verify_password(password: str, password_hash: str) -> bool:
         return False
 
 
-def ensure_admin_password(password: str) -> None:
+def validate_password_strength(password: str) -> None:
+    if len(password) < MIN_PASSWORD_LENGTH:
+        raise RuntimeError(f"ADMIN_PASSWORD must contain at least {MIN_PASSWORD_LENGTH} characters")
+    if password.strip() != password:
+        raise RuntimeError("ADMIN_PASSWORD must not start or end with whitespace")
+    if len(set(password)) < 8:
+        raise RuntimeError("ADMIN_PASSWORD is too repetitive")
+
+
+def ensure_admin_password(password: str, *, force_update: bool = False) -> None:
     if not password:
         raise RuntimeError("ADMIN_PASSWORD is required")
+    validate_password_strength(password)
     existing = db.get_admin_password_hash()
-    if existing:
+    if existing and not force_update and verify_password(password, existing):
         return
     db.set_admin_password_hash(hash_password(password))
+    db.delete_all_admin_sessions()
 
 
 def login(request: Request, response: Response, password: str) -> None:

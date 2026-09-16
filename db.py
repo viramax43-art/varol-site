@@ -310,6 +310,12 @@ def delete_admin_session(token_hash: str):
         c.execute("DELETE FROM admin_sessions WHERE token_hash = %s", (token_hash,))
 
 
+def delete_all_admin_sessions():
+    with get_connection() as conn:
+        c = conn.cursor()
+        c.execute("DELETE FROM admin_sessions")
+
+
 def create_transaction(tx_code, category, amount, currency, name, comment, file_path, expires_at=None):
     with get_connection() as conn:
         c = conn.cursor()

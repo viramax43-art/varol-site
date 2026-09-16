@@ -7,6 +7,7 @@ from unittest.mock import patch
 from fastapi import HTTPException
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+import tests.bootstrap_env  # noqa: F401
 import app
 
 

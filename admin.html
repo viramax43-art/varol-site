@@ -352,7 +352,12 @@ body {
 </div>
 
 <script>
+const ADMIN_API_PREFIX = "__ADMIN_API_PREFIX__";
 let currentAdminData = {};
+
+function adminApi(path) {
+    return ADMIN_API_PREFIX + path;
+}
 
 function adminFetch(url, options = {}) {
     const opts = { credentials: "same-origin", ...options };
@@ -384,7 +389,7 @@ async function doAdminLogin() {
     }
 
     try {
-        const loginRes = await adminFetch("/api/admin/login", {
+        const loginRes = await adminFetch(adminApi("/login"), {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ password: pass })
@@ -415,7 +420,7 @@ async function doAdminLogin() {
 
 async function logoutAdmin() {
     try {
-        await adminFetch("/api/admin/logout", { method: "POST" });
+        await adminFetch(adminApi("/logout"), { method: "POST" });
     } catch (e) {}
     document.getElementById("adminView").style.display = "none";
     document.getElementById("loginView").style.display = "block";
@@ -425,7 +430,7 @@ async function verifyAndLoadAdmin(isManualLogin = false) {
     const errorEl = document.getElementById("loginErrorMsg");
     if (errorEl) errorEl.style.display = "none";
     try {
-        const res = await adminFetch("/api/admin/data");
+        const res = await adminFetch(adminApi("/data"));
         if (!res.ok) {
             document.getElementById("adminView").style.display = "none";
             document.getElementById("loginView").style.display = "block";
@@ -657,7 +662,7 @@ async function saveBankDirect(id, btnEl) {
     }
 
     try {
-        const res = await adminFetch("/api/admin/save_bank", {
+        const res = await adminFetch(adminApi("/save_bank"), {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ id, name, value, link_url })
@@ -700,7 +705,7 @@ async function saveProjectDirect(id, btnEl) {
     }
 
     try {
-        const res = await adminFetch("/api/admin/edit_project", {
+        const res = await adminFetch(adminApi("/edit_project"), {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
@@ -748,7 +753,7 @@ async function toggleProjectActiveDirect(id, isActive) {
             statusLabel.style.color = isActive ? 'var(--accent-green)' : 'var(--text-muted)';
         }
     }
-    await adminFetch("/api/admin/toggle_project", {
+    await adminFetch(adminApi("/toggle_project"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ project_id: id, is_active: isActive ? 1 : 0 })
@@ -756,7 +761,7 @@ async function toggleProjectActiveDirect(id, isActive) {
 }
 
 async function toggleBankActive(bankId, isActive) {
-    await adminFetch("/api/admin/toggle_bank", {
+    await adminFetch(adminApi("/toggle_bank"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ bank_id: bankId, is_active: isActive })
@@ -779,7 +784,7 @@ async function moveBankDown(index) {
 
 async function saveBankOrder(banks) {
     const bankIds = banks.map(b => b.id);
-    await adminFetch("/api/admin/reorder_banks", {
+    await adminFetch(adminApi("/reorder_banks"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ bank_ids: bankIds })
@@ -803,7 +808,7 @@ async function moveProjectDown(index) {
 
 async function saveProjectOrder(projs) {
     const projIds = projs.map(p => p.id);
-    await adminFetch("/api/admin/reorder_projects", {
+    await adminFetch(adminApi("/reorder_projects"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ project_ids: projIds })
@@ -846,7 +851,7 @@ async function saveBankDetails() {
 
     if (!name) return alert("Введите название метода");
 
-    await adminFetch("/api/admin/save_bank", {
+    await adminFetch(adminApi("/save_bank"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id: id ? parseInt(id) : null, name, value, link_url })
@@ -856,7 +861,7 @@ async function saveBankDetails() {
 }
 
 async function toggleProjectActive(projId, isActive) {
-    await adminFetch("/api/admin/toggle_project", {
+    await adminFetch(adminApi("/toggle_project"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ project_id: projId, is_active: isActive ? 1 : 0 })
@@ -865,7 +870,7 @@ async function toggleProjectActive(projId, isActive) {
 }
 
 async function toggleOwnProject(enabled) {
-    await adminFetch("/api/admin/set_own_project", {
+    await adminFetch(adminApi("/set_own_project"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ enabled: enabled ? 1 : 0 })
@@ -883,7 +888,7 @@ async function saveOwnProjectSettings(btnEl) {
     const enabled = document.getElementById("ownProjectEnabledCheck").checked ? 1 : 0;
     const link = document.getElementById("ownProjectLinkInput") ? document.getElementById("ownProjectLinkInput").value.trim() : "";
 
-    await adminFetch("/api/admin/set_own_project", {
+    await adminFetch(adminApi("/set_own_project"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -915,7 +920,7 @@ async function saveManifestSettings(btnEl) {
     const title = document.getElementById("manifestTitleInput").value.trim();
     const text = document.getElementById("manifestTextInput").value.trim();
 
-    await adminFetch("/api/admin/set_feedback_manifest", {
+    await adminFetch(adminApi("/set_feedback_manifest"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -940,7 +945,7 @@ async function saveManifestSettings(btnEl) {
 async function saveAnonTitle() {
     const title = document.getElementById("anonTitleInput").value.trim();
     if (!title) return alert("Введите название");
-    await adminFetch("/api/admin/set_anon_title", {
+    await adminFetch(adminApi("/set_anon_title"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ title: title })
@@ -990,7 +995,7 @@ async function saveProject() {
 
     const categoryEl = document.getElementById("newProjCategory");
     const category = categoryEl ? categoryEl.value : "investment";
-    const endpoint = id ? "/api/admin/edit_project" : "/api/admin/add_project";
+    const endpoint = id ? adminApi("/edit_project") : adminApi("/add_project");
     const payload = { name, code, min_amount, description, payment_link, is_active, category };
     if (id) payload.project_id = parseInt(id);
 
@@ -1005,7 +1010,7 @@ async function saveProject() {
 
 async function deleteProject(projId) {
     if (!confirm("Удалить проект?")) return;
-    await adminFetch("/api/admin/delete_project", {
+    await adminFetch(adminApi("/delete_project"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ project_id: projId })
@@ -1014,7 +1019,7 @@ async function deleteProject(projId) {
 }
 
 async function updateTxStatus(txId, status) {
-    await adminFetch("/api/admin/update_tx_status", {
+    await adminFetch(adminApi("/update_tx_status"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ tx_id: txId, status })
