@@ -1,0 +1,29 @@
+# Environment variables & secrets
+.env
+*.env
+!.env.example
+
+# Local backups and dev patches
+backups/
+memory/
+*.bak-*
+patch_*.py
+
+# SQLite Database
+*.db
+*.sqlite
+database.db
+
+# Uploads & Temp files
+uploads/
+/tmp/
+*.log
+
+# Python cache & venv
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+venv/
+venv2/
+.pytest_cache/

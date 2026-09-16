@@ -1,0 +1,18 @@
+{
+  "name": "varol",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "type": "commonjs",
+  "dependencies": {
+    "currency-codes": "^2.2.0",
+    "i18n-iso-countries": "^7.14.0"
+  }
+}

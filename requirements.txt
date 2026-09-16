@@ -1,0 +1,8 @@
+fastapi
+uvicorn
+python-multipart
+Pillow
+aiogram
+aiohttp
+psycopg2-binary
+bcrypt

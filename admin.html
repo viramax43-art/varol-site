@@ -1,0 +1,1030 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"/>
+<title>VarolBlask — Панель Управления</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,500,0,0" rel="stylesheet"/>
+<style>
+:root {
+    --bg-dark: #070B14;
+    --card-bg: rgba(15, 23, 42, 0.85);
+    --accent: #38BDF8;
+    --accent-green: #10B981;
+    --accent-red: #EF4444;
+    --text-main: #F8FAFC;
+    --text-muted: #94A3B8;
+    --border: rgba(255, 255, 255, 0.1);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
+body { background: var(--bg-dark); color: var(--text-main); min-height: 100vh; padding: 15px; }
+
+.login-card { max-width: 380px; margin: 80px auto; background: var(--card-bg); border: 1px solid var(--border); border-radius: 20px; padding: 30px 24px; text-align: center; }
+.login-title { font-size: 20px; font-weight: 800; margin-bottom: 8px; color: var(--accent); }
+.login-desc { font-size: 13px; color: var(--text-muted); margin-bottom: 24px; }
+.form-input { width: 100%; padding: 14px 16px; background: rgba(0,0,0,0.4); border: 1px solid var(--border); border-radius: 12px; color: #fff; font-size: 15px; margin-bottom: 16px; outline: none; }
+.form-input:focus { border-color: var(--accent); }
+.btn-primary { width: 100%; padding: 14px; background: var(--accent); color: #000; font-weight: 800; border: none; border-radius: 12px; font-size: 15px; cursor: pointer; }
+
+.admin-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid var(--border); }
+.brand-name { font-size: 18px; font-weight: 800; color: var(--accent); }
+
+.nav-tabs { display: flex; gap: 8px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 4px; }
+.tab-btn { flex: 1; padding: 12px 14px; background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 12px; color: var(--text-muted); font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap; display: flex; align-items: center; justify-content: center; gap: 6px; }
+.tab-btn.active { background: var(--accent); color: #000; border-color: var(--accent); }
+
+.section-panel { display: none; }
+.section-panel.active { display: block; }
+
+.item-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 16px; padding: 16px; margin-bottom: 14px; }
+.item-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+.item-title { font-size: 15px; font-weight: 700; color: #fff; }
+
+/* Switch Toggle */
+.switch { position: relative; display: inline-block; width: 46px; height: 26px; }
+.switch input { opacity: 0; width: 0; height: 0; }
+.slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #334155; transition: .3s; border-radius: 26px; }
+.slider:before { position: absolute; content: ""; height: 20px; width: 20px; left: 3px; bottom: 3px; background-color: white; transition: .3s; border-radius: 50%; }
+input:checked + .slider { background-color: var(--accent-green); }
+input:checked + .slider:before { transform: translateX(20px); }
+
+.req-text-box { font-family: 'JetBrains Mono', monospace; font-size: 12px; background: rgba(0,0,0,0.4); padding: 10px; border-radius: 8px; color: #CBD5E1; white-space: pre-wrap; word-break: break-all; margin-bottom: 10px; }
+.link-url-text { font-size: 11px; color: var(--accent); word-break: break-all; }
+
+.btn-small { padding: 8px 14px; border-radius: 8px; font-size: 12px; font-weight: 700; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; }
+.btn-icon { background: rgba(255, 255, 255, 0.1); color: var(--text-main); border: 1px solid var(--border); padding: 8px; }
+.btn-icon:hover { background: rgba(255, 255, 255, 0.15); }
+.btn-icon:disabled { opacity: 0.3; cursor: not-allowed; background: rgba(255,255,255,0.05); }
+.btn-edit { background: rgba(56, 189, 248, 0.15); color: var(--accent); border: 1px solid rgba(56, 189, 248, 0.3); }
+.btn-danger { background: rgba(239, 68, 68, 0.15); color: var(--accent-red); border: 1px solid rgba(239, 68, 68, 0.3); }
+.btn-success { background: rgba(16, 185, 129, 0.15); color: var(--accent-green); border: 1px solid rgba(16, 185, 129, 0.3); }
+
+/* Modal */
+.modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(8px); z-index: 100; align-items: center; justify-content: center; padding: 20px; }
+.modal-overlay.open { display: flex; }
+.modal-box { width: 100%; max-width: 440px; background: #0F172A; border: 1px solid var(--border); border-radius: 20px; padding: 24px; }
+.modal-title { font-size: 16px; font-weight: 800; margin-bottom: 16px; }
+
+.badge { padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 700; text-transform: uppercase; }
+.badge-pending { background: rgba(245, 158, 11, 0.2); color: #F59E0B; }
+.badge-approved { background: rgba(16, 185, 129, 0.2); color: #10B981; }
+.badge-rejected { background: rgba(239, 68, 68, 0.2); color: #EF4444; }
+
+
+/* Ultra Mobile Ergonomics */
+html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    min-height: 100%;
+    height: auto;
+    overflow-x: hidden;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    background: var(--bg-dark);
+    color: var(--text-main);
+}
+
+body {
+    padding: 12px 10px 80px 10px;
+}
+
+@media (max-width: 600px) {
+    body {
+        padding: 10px 8px 100px 8px !important;
+    }
+    #adminView {
+        width: 100% !important;
+        max-width: 100% !important;
+        padding-bottom: 80px !important;
+    }
+    .admin-header {
+        margin-bottom: 14px !important;
+        padding-bottom: 10px !important;
+    }
+    .brand-name {
+        font-size: 17px !important;
+    }
+    .nav-tabs {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important;
+        gap: 8px !important;
+        margin-bottom: 16px !important;
+    }
+    .tab-btn {
+        width: 100% !important;
+        padding: 12px 6px !important;
+        font-size: 13px !important;
+        justify-content: center !important;
+        min-height: 48px !important;
+        border-radius: 12px !important;
+    }
+    .form-input, select, input, textarea {
+        font-size: 16px !important; /* Prevents iOS auto-zoom on input focus */
+        padding: 12px 14px !important;
+        border-radius: 12px !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+    }
+    .item-card {
+        padding: 16px 14px !important;
+        margin-bottom: 14px !important;
+        border-radius: 16px !important;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.4) !important;
+    }
+    .item-header {
+        flex-wrap: wrap !important;
+        gap: 8px !important;
+    }
+    .item-title {
+        font-size: 15px !important;
+        line-height: 1.3 !important;
+        word-break: break-word !important;
+    }
+    .btn-primary, .btn-small {
+        min-height: 46px !important;
+        touch-action: manipulation;
+        -webkit-tap-highlight-color: transparent;
+        font-size: 14px !important;
+    }
+    .modal-overlay {
+        padding: 0 !important;
+        align-items: flex-end !important;
+    }
+    .modal-box {
+        width: 100% !important;
+        max-width: 100% !important;
+        border-bottom-left-radius: 0 !important;
+        border-bottom-right-radius: 0 !important;
+        border-top-left-radius: 24px !important;
+        border-top-right-radius: 24px !important;
+        padding: 20px 16px 30px 16px !important;
+        max-height: 88vh !important;
+        overflow-y: auto !important;
+    }
+}
+</style>
+</head>
+<body>
+
+<!-- Login Form -->
+<div id="loginView" class="login-card">
+    <div style="text-align: center; margin-bottom: 16px;">
+        <span class="material-symbols-rounded" style="font-size: 48px; color: var(--accent); margin-bottom: 8px;">admin_panel_settings</span>
+        <div class="login-title" style="font-size: 22px; font-weight: 800; color: #fff;">Админ-Панель</div>
+        <div class="login-desc" style="font-size: 13px; color: var(--text-muted); margin-top: 4px;">Введите пароль для доступа к управлению</div>
+    </div>
+    <form onsubmit="event.preventDefault(); doAdminLogin();" style="display: flex; flex-direction: column; gap: 12px;">
+        <input type="password" id="adminPasswordInput" class="form-input" placeholder="Пароль администратора" autocomplete="current-password" style="font-size: 16px !important; min-height: 48px;"/>
+        <div id="loginErrorMsg" style="color: #ff4d4d; font-size: 13px; font-weight: 600; text-align: center; display: none;"></div>
+        <button id="adminLoginBtn" class="btn-primary" type="submit" style="min-height: 50px; font-size: 16px; font-weight: 700; width: 100%; cursor: pointer; border: none; border-radius: 12px; background: linear-gradient(135deg, #38BDF8 0%, #0284c7 100%); color: #fff;">Войти</button>
+    </form>
+</div>
+
+<!-- Main Admin Panel View -->
+<div id="adminView" style="display: none; max-width: 600px; margin: 0 auto;">
+    <header class="admin-header">
+        <div>
+            <div class="brand-name">VarlBlask Admin</div>
+            <div style="font-size: 11px; color: var(--text-muted);">Панель управления шлюзом</div>
+        </div>
+        <button class="btn-small btn-danger" onclick="logoutAdmin()">
+            <span class="material-symbols-rounded" style="font-size: 16px;">logout</span>Выход
+        </button>
+    </header>
+
+    <nav class="nav-tabs">
+        <button class="tab-btn active" onclick="switchAdminTab('projects')">
+            <span class="material-symbols-rounded">folder</span>Проекты
+        </button>
+        <button class="tab-btn" onclick="switchAdminTab('banks')">
+            <span class="material-symbols-rounded">account_balance</span>Методы оплаты
+        </button>
+    </nav>
+
+    <!-- TAB 1: BANKS / PAYMENT METHODS -->
+    <section id="tabBanks" class="section-panel">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+            <div style="font-size: 14px; font-weight: 700;">Способы и ссылки оплаты</div>
+            <button class="btn-small btn-edit" onclick="openAddBankModal()">
+                <span class="material-symbols-rounded">add</span>Добавить метод
+            </button>
+        </div>
+        <div id="banksList"></div>
+    </section>
+
+    <!-- TAB 2: PROJECTS -->
+    <section id="tabProjects" class="section-panel active">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+            <div style="font-size: 14px; font-weight: 700;">Настройки и Проекты</div>
+            <button class="btn-small btn-edit" onclick="openAddProjectModal()">
+                <span class="material-symbols-rounded">add</span>Добавить проект
+            </button>
+        </div>
+
+        <!-- Own Project (Вестибюль / Предложить свой) Card -->
+        <div class="item-card project-card" style="margin-bottom: 16px; border: 1px solid rgba(212, 175, 55, 0.4); background: rgba(15, 23, 42, 0.9);">
+            <div class="item-header" style="margin-bottom: 12px; padding-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.06);">
+                <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                    <span style="font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 700; color: #d4af37;">[OWN]</span>
+                    <span style="font-weight: 800; font-size: 15px; color: #fff;">Опция «Предложить свой»</span>
+                    <span class="badge" style="background: rgba(212, 175, 55, 0.2); color: #d4af37;">Вестибюль</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 8px; margin-left: auto;">
+                    <label class="switch" title="Включить / Отключить на сайте">
+                        <input type="checkbox" id="ownProjectEnabledCheck">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 10px; margin-bottom: 10px; flex-wrap: wrap;">
+                <div style="flex: 2; min-width: 170px;">
+                    <label style="font-size: 11px; color: var(--text-muted); display: block; margin-bottom: 4px; font-weight: 600;">Название опции на сайте</label>
+                    <input type="text" id="ownProjectTitleInput" class="form-input" placeholder="Например: Предложить свой">
+                </div>
+                <div style="flex: 1; min-width: 110px;">
+                    <label style="font-size: 11px; color: var(--accent); display: block; margin-bottom: 4px; font-weight: 700;">Порог (€)</label>
+                    <input type="number" id="ownProjectMinInput" class="form-input" placeholder="250">
+                </div>
+            </div>
+
+            <div style="margin-bottom: 12px;">
+                <label style="font-size: 11px; color: var(--text-muted); display: block; margin-bottom: 4px; font-weight: 600;">Ссылка оплаты Revolut</label>
+                <input type="text" id="ownProjectLinkInput" class="form-input" placeholder="https://checkout.revolut.com/pay/...">
+            </div>
+
+            <button class="btn-primary" style="width: 100%; min-height: 42px; font-size: 13px; font-weight: 800;" onclick="saveOwnProjectSettings(this)">
+                <span class="material-symbols-rounded" style="font-size: 16px; vertical-align: middle; margin-right: 4px;">save</span>
+                Сохранить настройки
+            </button>
+        </div>
+
+        <!-- Manifest settings card (Вкладка «Предложение») -->
+        <div class="item-card project-card" style="margin-bottom: 20px; border: 1px solid rgba(168, 85, 247, 0.4); background: rgba(15, 23, 42, 0.9);">
+            <div class="item-header" style="margin-bottom: 12px; padding-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.06);">
+                <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                    <span class="material-symbols-rounded" style="color: #a855f7; font-size: 18px;">auto_awesome</span>
+                    <span style="font-weight: 800; font-size: 15px; color: #fff;">Манифест во вкладке «Предложение»</span>
+                    <span class="badge" style="background: rgba(168, 85, 247, 0.2); color: #a855f7;">Текст доверия</span>
+                </div>
+            </div>
+
+            <div style="margin-bottom: 10px;">
+                <label style="font-size: 11px; color: var(--text-muted); display: block; margin-bottom: 4px; font-weight: 600;">Заголовок блока</label>
+                <input type="text" id="manifestTitleInput" class="form-input" placeholder="Мы ценим ваш вклад">
+            </div>
+
+            <div style="margin-bottom: 12px;">
+                <label style="font-size: 11px; color: var(--text-muted); display: block; margin-bottom: 4px; font-weight: 600;">Основной текст обращения</label>
+                <textarea id="manifestTextInput" class="form-input" style="height: 80px; resize: vertical;" placeholder="Текст благодарности и описания обработки идей..."></textarea>
+            </div>
+
+            <button class="btn-primary" style="width: 100%; min-height: 42px; font-size: 13px; font-weight: 800;" onclick="saveManifestSettings(this)">
+                <span class="material-symbols-rounded" style="font-size: 16px; vertical-align: middle; margin-right: 4px;">save</span>
+                Сохранить текст манифеста
+            </button>
+        </div>
+
+        <div id="projectsList"></div>
+    </section>
+
+    <!-- TAB 3: TRANSACTIONS / APPLICATIONS -->
+</div>
+
+<!-- Modal: Edit Bank -->
+<div id="bankModal" class="modal-overlay">
+    <div class="modal-box">
+        <div class="modal-title" id="bankModalTitle">Редактировать метод</div>
+        <input type="hidden" id="editBankId"/>
+        <label style="font-size: 12px; color: var(--text-muted); display: block; margin-bottom: 6px;">Название метода / Банка</label>
+        <input type="text" id="editBankName" class="form-input" placeholder="Например: Revolut (EUR)"/>
+        <label style="font-size: 12px; color: var(--text-muted); display: block; margin-bottom: 6px;">Реквизиты (текст)</label>
+        <textarea id="editBankValue" class="form-input" style="height: 100px; resize: vertical;" placeholder="IBAN / Номер счета / Имя получателя"></textarea>
+        <label style="font-size: 12px; color: var(--text-muted); display: block; margin-bottom: 6px;">Прямая ссылка для оплаты (если есть)</label>
+        <input type="text" id="editBankUrl" class="form-input" placeholder="https://checkout.revolut.com/pay/..."/>
+        <div style="display: flex; gap: 10px; margin-top: 10px;">
+            <button class="btn-primary" onclick="saveBankDetails()">Сохранить</button>
+            <button class="btn-small btn-danger" style="width: auto;" onclick="closeModal('bankModal')">Отмена</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Add Project -->
+<div id="projectModal" class="modal-overlay">
+    <div class="modal-box">
+        <div class="modal-title" id="projectModalTitle">Добавить проект</div>
+        <input type="hidden" id="editProjId" value=""/>
+        <label style="font-size: 12px; color: var(--text-muted); display: block; margin-bottom: 6px;">Назначение / Раздел сайта</label>
+        <select id="newProjCategory" class="form-input">
+            <option value="investment">Инвестор (Инвестиционный проект)</option>
+            <option value="donation">Аноним (Анонимный перевод / Донат)</option>
+            <option value="feedback">Пожелание (Идентификационный сбор идей зрителей)</option>
+        </select>
+        <label style="font-size: 12px; color: var(--text-muted); display: block; margin-bottom: 6px;">Название проекта / варианта</label>
+        <input type="text" id="newProjName" class="form-input" placeholder="Например: Сеть кофейных аппаратов"/>
+        <label style="font-size: 12px; color: var(--text-muted); display: block; margin-bottom: 6px;">Код проекта (A-Z, 0-9)</label>
+        <input type="text" id="newProjCode" class="form-input" placeholder="Например: COFFEE"/>
+        <label style="font-size: 12px; color: var(--text-muted); display: block; margin-bottom: 6px;">Порог входа / Мин. сумма (€)</label>
+        <input type="number" id="newProjMin" class="form-input" placeholder="250"/>
+        <label style="font-size: 12px; color: var(--text-muted); display: block; margin-bottom: 6px;">Описание</label>
+        <input type="text" id="newProjDesc" class="form-input" placeholder="Краткое описание проекта"/>
+        <label style="font-size: 12px; color: var(--text-muted); display: block; margin-bottom: 6px;">Индивидуальная ссылка на оплату (Revolut Checkout)</label>
+        <input type="text" id="newProjPaymentLink" class="form-input" placeholder="https://checkout.revolut.com/pay/..."/>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; margin-top: 10px; padding: 12px 14px; background: rgba(255,255,255,0.03); border-radius: 12px; border: 1px solid var(--border);">
+            <div>
+                <div style="font-size: 13px; color: var(--text-main); font-weight: 600;">Статус проекта</div>
+                <div style="font-size: 11px; color: var(--text-muted);">Активен (отображается в списке на сайте)</div>
+            </div>
+            <label class="switch">
+                <input type="checkbox" id="newProjActive" checked/>
+                <span class="slider"></span>
+            </label>
+        </div>
+        <div style="display: flex; gap: 10px; margin-top: 10px;">
+            <button class="btn-primary" id="saveProjectBtn" onclick="saveProject()">Сохранить</button>
+            <button class="btn-small btn-danger" style="width: auto;" onclick="closeModal('projectModal')">Отмена</button>
+        </div>
+    </div>
+</div>
+
+<script>
+let currentAdminData = {};
+
+function adminFetch(url, options = {}) {
+    const opts = { credentials: "same-origin", ...options };
+    opts.headers = { ...(options.headers || {}) };
+    return fetch(url, opts);
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+    verifyAndLoadAdmin();
+});
+
+async function doAdminLogin() {
+    const passInput = document.getElementById("adminPasswordInput");
+    const pass = passInput ? passInput.value.trim() : "";
+    const errorEl = document.getElementById("loginErrorMsg");
+    const btn = document.getElementById("adminLoginBtn");
+
+    if (!pass) {
+        if (errorEl) {
+            errorEl.innerText = "Пожалуйста, введите пароль";
+            errorEl.style.display = "block";
+        }
+        return;
+    }
+
+    if (btn) {
+        btn.innerText = "Проверка...";
+        btn.disabled = true;
+    }
+
+    try {
+        const loginRes = await adminFetch("/api/admin/login", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ password: pass })
+        });
+        if (!loginRes.ok) {
+            if (errorEl) {
+                errorEl.innerText = loginRes.status === 429
+                    ? "Слишком много попыток. Подождите 15 минут."
+                    : "Неверный пароль администратора";
+                errorEl.style.display = "block";
+            }
+            return;
+        }
+        if (passInput) passInput.value = "";
+        await verifyAndLoadAdmin(true);
+    } catch (e) {
+        if (errorEl) {
+            errorEl.innerText = "Ошибка подключения к серверу";
+            errorEl.style.display = "block";
+        }
+    } finally {
+        if (btn) {
+            btn.innerText = "Войти";
+            btn.disabled = false;
+        }
+    }
+}
+
+async function logoutAdmin() {
+    try {
+        await adminFetch("/api/admin/logout", { method: "POST" });
+    } catch (e) {}
+    document.getElementById("adminView").style.display = "none";
+    document.getElementById("loginView").style.display = "block";
+}
+
+async function verifyAndLoadAdmin(isManualLogin = false) {
+    const errorEl = document.getElementById("loginErrorMsg");
+    if (errorEl) errorEl.style.display = "none";
+    try {
+        const res = await adminFetch("/api/admin/data");
+        if (!res.ok) {
+            document.getElementById("adminView").style.display = "none";
+            document.getElementById("loginView").style.display = "block";
+            if (isManualLogin && errorEl) {
+                errorEl.innerText = "Не удалось открыть админ-панель";
+                errorEl.style.display = "block";
+            }
+            return;
+        }
+        const data = await res.json();
+        currentAdminData = data;
+        document.getElementById("loginView").style.display = "none";
+        document.getElementById("adminView").style.display = "block";
+        renderAdminData(data);
+    } catch (e) {
+        if (isManualLogin && errorEl) {
+            errorEl.innerText = "Ошибка подключения к серверу";
+            errorEl.style.display = "block";
+        }
+    }
+}
+
+function switchAdminTab(tab) {
+    document.querySelectorAll(".nav-tabs .tab-btn").forEach(b => b.classList.remove("active"));
+    document.querySelectorAll(".section-panel").forEach(p => p.classList.remove("active"));
+    
+    if (tab === 'banks') {
+        document.querySelectorAll(".nav-tabs .tab-btn")[1].classList.add("active");
+        document.getElementById("tabBanks").classList.add("active");
+    } else if (tab === 'projects') {
+        document.querySelectorAll(".nav-tabs .tab-btn")[0].classList.add("active");
+        document.getElementById("tabProjects").classList.add("active");
+    } else if (tab === 'txs') {
+        document.querySelectorAll(".nav-tabs .tab-btn")[2].classList.add("active");
+        document.getElementById("tabTxs").classList.add("active");
+    }
+}
+
+function renderAdminData(data) {
+    // Fill Own Project (Вестибюль) Settings
+    const chk = document.getElementById('ownProjectEnabledCheck');
+    const tit = document.getElementById('ownProjectTitleInput');
+    const min = document.getElementById('ownProjectMinInput');
+    const lnk = document.getElementById('ownProjectLinkInput');
+    if (chk) chk.checked = !!(data.own_project_enabled !== undefined ? data.own_project_enabled : data.config?.own_project_enabled);
+    if (tit) tit.value = data.own_project_title || data.config?.own_project_title || 'Предложить свой';
+    if (min) min.value = data.own_project_min || data.config?.own_project_min || '250';
+    if (lnk) lnk.value = data.own_project_link || data.config?.own_project_link || '';
+
+    // Fill Manifest Settings
+    const mTit = document.getElementById('manifestTitleInput');
+    const mTxt = document.getElementById('manifestTextInput');
+    if (mTit) mTit.value = data.feedback_manifest_title || data.config?.feedback_manifest_title || 'Мы ценим ваш вклад';
+    if (mTxt) mTxt.value = data.feedback_manifest_text || data.config?.feedback_manifest_text || 'Мы выражаем глубокую благодарность за ваш уникальный вклад. Каждая идея особенна: мы обязательно изучим ваше предложение, оно пройдет анализ через систему ИИ и будет объединено с общими векторами развития платформы.';
+
+    // Render Banks — Inline Mobile Cards
+    const bContainer = document.getElementById("banksList");
+    bContainer.innerHTML = "";
+    (data.banks || []).forEach((b, index) => {
+        const activeChecked = b.is_active ? "checked" : "";
+        bContainer.innerHTML += `
+            <div class="item-card" id="bankCard_${b.id}">
+                <div class="item-header">
+                    <div style="font-weight: 800; font-size: 15px; color: #fff;">${b.name}</div>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span style="font-size: 11px; color: ${b.is_active ? 'var(--accent-green)' : 'var(--text-muted)'}; font-weight: 600;">${b.is_active ? 'Активен' : 'Отключен'}</span>
+                        <label class="switch">
+                            <input type="checkbox" ${activeChecked} onchange="toggleBankActive(${b.id}, this.checked)">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+                <div style="margin-bottom: 8px;">
+                    <label style="font-size: 11px; color: var(--text-muted); display: block; margin-bottom: 4px; font-weight: 600;">Название метода</label>
+                    <input type="text" class="form-input bank-name-input" value="${b.name || ''}" placeholder="Например: Revolut (EUR)">
+                </div>
+                <div style="margin-bottom: 8px;">
+                    <label style="font-size: 11px; color: var(--text-muted); display: block; margin-bottom: 4px; font-weight: 600;">Реквизиты (текст)</label>
+                    <textarea class="form-input bank-value-input" style="min-height: 70px; resize: vertical;" placeholder="IBAN / Счет / Имя получателя">${b.value || ''}</textarea>
+                </div>
+                <div style="margin-bottom: 12px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                        <label style="font-size: 11px; color: var(--text-muted); font-weight: 600;">Прямая ссылка для оплаты</label>
+                        ${b.link_url ? `<a href="${b.link_url}" target="_blank" style="font-size: 11px; color: var(--accent); text-decoration: underline;">Открыть ↗</a>` : ''}
+                    </div>
+                    <input type="text" class="form-input bank-link-input" value="${b.link_url || ''}" placeholder="https://checkout.revolut.com/pay/...">
+                </div>
+                <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                    <button class="btn-primary" style="flex: 1; min-height: 42px; font-size: 13px; font-weight: 800;" onclick="saveBankDirect(${b.id}, this)">
+                        <span class="material-symbols-rounded" style="font-size: 16px; vertical-align: middle; margin-right: 4px;">save</span>
+                        Сохранить банк
+                    </button>
+                    <button class="btn-small btn-icon" style="min-height: 42px; width: 42px; margin-left: auto;" onclick="moveBankUp(${index})" ${index === 0 ? 'disabled' : ''} title="Выше">
+                        <span class="material-symbols-rounded" style="font-size: 18px;">arrow_upward</span>
+                    </button>
+                    <button class="btn-small btn-icon" style="min-height: 42px; width: 42px;" onclick="moveBankDown(${index})" ${index === data.banks.length - 1 ? 'disabled' : ''} title="Ниже">
+                        <span class="material-symbols-rounded" style="font-size: 18px;">arrow_downward</span>
+                    </button>
+                </div>
+            </div>
+        `;
+    });
+
+    // Render Projects — Grouped by Section with Inline Inputs
+    const pContainer = document.getElementById("projectsList");
+    pContainer.innerHTML = "";
+
+    const projects = data.projects || [];
+    const invProjects = projects.filter(p => !p.category || p.category === 'investment');
+    const otherProjects = projects.filter(p => p.category === 'feedback' || p.category === 'donation');
+
+    function renderProjectCard(p, originalIndex) {
+        const activeChecked = (p.is_active !== 0 && p.is_active !== false) ? "checked" : "";
+        let catBadge = '<span class="badge" style="background: rgba(0, 195, 255, 0.2); color: #00c3ff;">Инвестор</span>';
+        if (p.category === 'donation') {
+            catBadge = '<span class="badge" style="background: rgba(255, 204, 0, 0.2); color: #ffcc00;">Донат</span>';
+        } else if (p.category === 'feedback') {
+            catBadge = '<span class="badge" style="background: rgba(168, 85, 247, 0.2); color: #a855f7;">Предложение</span>';
+        }
+
+        return `
+            <div class="item-card project-card ${p.is_active === 0 ? 'is-disabled' : ''}" id="projCard_${p.id}" data-id="${p.id}" data-category="${p.category || 'investment'}" style="${p.is_active === 0 ? 'opacity: 0.75;' : ''} margin-bottom: 16px; border: 1px solid rgba(255,255,255,0.12);">
+                <div class="item-header" style="margin-bottom: 12px; padding-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.06);">
+                    <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                        <span class="project-code-tag" style="font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 700; color: var(--accent);">[${p.code}]</span>
+                        <span class="project-name-display" style="font-weight: 800; font-size: 15px; color: #fff;">${p.name}</span>
+                        ${catBadge}
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 8px; margin-left: auto;">
+                        <span class="proj-status-label" style="font-size: 11px; font-weight: 600; color: ${p.is_active !== 0 ? 'var(--accent-green)' : 'var(--text-muted)'};">${p.is_active !== 0 ? 'Активен' : 'Отключен'}</span>
+                        <label class="switch" title="Включить / Отключить проект на сайте">
+                            <input type="checkbox" class="proj-active-check" ${activeChecked} onchange="toggleProjectActiveDirect(${p.id}, this.checked)">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 10px; margin-bottom: 10px; flex-wrap: wrap;">
+                    <div style="flex: 2; min-width: 170px;">
+                        <label style="font-size: 11px; color: var(--text-muted); display: block; margin-bottom: 4px; font-weight: 600;">Название проекта</label>
+                        <input type="text" class="form-input proj-name-input" value="${p.name || ''}" placeholder="Название проекта">
+                    </div>
+                    <div style="flex: 1; min-width: 110px;">
+                        <label style="font-size: 11px; color: var(--accent); display: block; margin-bottom: 4px; font-weight: 700;">Порог (€)</label>
+                        <input type="number" class="form-input proj-min-input" value="${p.min_amount || 5}" placeholder="Мин. сумма" step="1">
+                    </div>
+                    <div style="width: 85px; flex-shrink: 0;">
+                        <label style="font-size: 11px; color: var(--text-muted); display: block; margin-bottom: 4px; font-weight: 600;">Код</label>
+                        <input type="text" class="form-input proj-code-input" value="${p.code || ''}" placeholder="КОД">
+                    </div>
+                </div>
+
+                <div style="margin-bottom: 10px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                        <label style="font-size: 11px; color: var(--text-muted); font-weight: 600;">Ссылка оплаты Revolut</label>
+                        ${p.payment_link ? `<a href="${p.payment_link}" target="_blank" style="font-size: 11px; color: var(--accent); text-decoration: underline;">Проверить ссылку ↗</a>` : ''}
+                    </div>
+                    <input type="text" class="form-input proj-link-input" value="${p.payment_link || ''}" placeholder="https://checkout.revolut.com/pay/...">
+                </div>
+
+                <div style="margin-bottom: 14px;">
+                    <label style="font-size: 11px; color: var(--text-muted); display: block; margin-bottom: 4px; font-weight: 600;">Описание проекта</label>
+                    <input type="text" class="form-input proj-desc-input" value="${p.description || ''}" placeholder="Краткое описание">
+                </div>
+
+                <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                    <button class="btn-primary btn-save-project" style="flex: 1; min-height: 44px; font-size: 13px; font-weight: 800;" onclick="saveProjectDirect(${p.id}, this)">
+                        <span class="material-symbols-rounded" style="font-size: 16px; vertical-align: middle; margin-right: 4px;">save</span>
+                        Сохранить проект
+                    </button>
+                    <button class="btn-small btn-danger" style="min-height: 44px; padding: 0 14px;" onclick="deleteProject(${p.id})" title="Удалить проект">
+                        <span class="material-symbols-rounded" style="font-size: 18px;">delete</span>
+                    </button>
+                    <button class="btn-small btn-icon" style="min-height: 44px; width: 44px; margin-left: auto;" onclick="moveProjectUp(${originalIndex})" ${originalIndex === 0 ? 'disabled' : ''} title="Выше">
+                        <span class="material-symbols-rounded" style="font-size: 18px;">arrow_upward</span>
+                    </button>
+                    <button class="btn-small btn-icon" style="min-height: 44px; width: 44px;" onclick="moveProjectDown(${originalIndex})" ${originalIndex === projects.length - 1 ? 'disabled' : ''} title="Ниже">
+                        <span class="material-symbols-rounded" style="font-size: 18px;">arrow_downward</span>
+                    </button>
+                </div>
+            </div>
+        `;
+    }
+
+    // Section 1: Investment Projects
+    pContainer.innerHTML += `
+        <div style="font-size: 13px; font-weight: 800; color: #fff; text-transform: uppercase; letter-spacing: 0.5px; margin: 20px 0 12px 0; display: flex; align-items: center; gap: 6px;">
+            <span class="material-symbols-rounded" style="font-size: 18px; color: #00c3ff;">trending_up</span> Инвестиционные проекты (Вкладка «Проекты»)
+        </div>
+    `;
+    if (invProjects.length === 0) {
+        pContainer.innerHTML += `<div style="font-size: 13px; color: var(--text-muted); padding: 10px;">Нет инвестиционных проектов</div>`;
+    } else {
+        invProjects.forEach(p => {
+            const originalIndex = projects.findIndex(proj => proj.id === p.id);
+            pContainer.innerHTML += renderProjectCard(p, originalIndex);
+        });
+    }
+
+    // Section 2: Other Projects (Feedback & Donation)
+    pContainer.innerHTML += `
+        <div style="font-size: 13px; font-weight: 800; color: #fff; text-transform: uppercase; letter-spacing: 0.5px; margin: 30px 0 12px 0; display: flex; align-items: center; gap: 6px;">
+            <span class="material-symbols-rounded" style="font-size: 18px; color: #a855f7;">chat_bubble</span> Разделы предложений и донатов (Вкладка «Предложение»)
+        </div>
+    `;
+    if (otherProjects.length === 0) {
+        pContainer.innerHTML += `<div style="font-size: 13px; color: var(--text-muted); padding: 10px;">Нет проектов в этом разделе</div>`;
+    } else {
+        otherProjects.forEach(p => {
+            const originalIndex = projects.findIndex(proj => proj.id === p.id);
+            pContainer.innerHTML += renderProjectCard(p, originalIndex);
+        });
+    }
+}
+
+async function saveBankDirect(id, btnEl) {
+    const card = document.getElementById(`bankCard_${id}`);
+    if (!card) return;
+
+    const name = card.querySelector('.bank-name-input').value.trim();
+    const value = card.querySelector('.bank-value-input').value.trim();
+    const link_url = card.querySelector('.bank-link-input').value.trim();
+
+    const btn = btnEl || card.querySelector('.btn-primary');
+    const originalText = btn ? btn.innerHTML : '';
+    if (btn) {
+        btn.innerHTML = '<span class="material-symbols-rounded" style="font-size: 16px; vertical-align: middle; margin-right: 4px;">sync</span> Сохранение...';
+        btn.disabled = true;
+    }
+
+    try {
+        const res = await adminFetch("/api/admin/save_bank", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ id, name, value, link_url })
+        });
+        if (res.ok) {
+            if (btn) {
+                btn.innerHTML = '<span class="material-symbols-rounded" style="font-size: 16px; vertical-align: middle; margin-right: 4px;">check</span> Банк сохранен!';
+                btn.style.background = '#10B981';
+                btn.style.color = '#fff';
+                setTimeout(() => {
+                    btn.innerHTML = originalText;
+                    btn.style.background = '';
+                    btn.style.color = '';
+                    btn.disabled = false;
+                }, 2000);
+            }
+        }
+    } catch(e) {
+        if (btn) { btn.innerHTML = originalText; btn.disabled = false; }
+    }
+}
+
+async function saveProjectDirect(id, btnEl) {
+    const card = document.getElementById(`projCard_${id}`);
+    if (!card) return;
+
+    const name = card.querySelector('.proj-name-input').value.trim();
+    const code = card.querySelector('.proj-code-input').value.trim().toUpperCase();
+    const min_amount = parseFloat(card.querySelector('.proj-min-input').value) || 5;
+    const description = card.querySelector('.proj-desc-input').value.trim();
+    const payment_link = card.querySelector('.proj-link-input').value.trim();
+    const is_active = card.querySelector('.proj-active-check').checked ? 1 : 0;
+    const category = card.dataset.category || 'investment';
+
+    const btn = btnEl || card.querySelector('.btn-save-project');
+    const originalText = btn ? btn.innerHTML : '';
+    if (btn) {
+        btn.innerHTML = '<span class="material-symbols-rounded" style="font-size: 16px; vertical-align: middle; margin-right: 4px;">sync</span> Сохранение...';
+        btn.disabled = true;
+    }
+
+    try {
+        const res = await adminFetch("/api/admin/edit_project", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                project_id: id,
+                name,
+                code,
+                min_amount,
+                description,
+                payment_link,
+                is_active,
+                category
+            })
+        });
+
+        if (res.ok) {
+            const nameDisplay = card.querySelector('.project-name-display');
+            if (nameDisplay) nameDisplay.innerText = name;
+            const codeTag = card.querySelector('.project-code-tag');
+            if (codeTag) codeTag.innerText = `[${code}]`;
+
+            if (btn) {
+                btn.innerHTML = '<span class="material-symbols-rounded" style="font-size: 16px; vertical-align: middle; margin-right: 4px;">check</span> Проект сохранен!';
+                btn.style.background = '#10B981';
+                btn.style.color = '#fff';
+                setTimeout(() => {
+                    btn.innerHTML = originalText;
+                    btn.style.background = '';
+                    btn.style.color = '';
+                    btn.disabled = false;
+                }, 2000);
+            }
+        }
+    } catch (e) {
+        if (btn) { btn.innerHTML = originalText; btn.disabled = false; }
+    }
+}
+
+async function toggleProjectActiveDirect(id, isActive) {
+    const card = document.getElementById(`projCard_${id}`);
+    if (card) {
+        card.style.opacity = isActive ? '1' : '0.75';
+        const statusLabel = card.querySelector('.proj-status-label');
+        if (statusLabel) {
+            statusLabel.innerText = isActive ? 'Активен' : 'Отключен';
+            statusLabel.style.color = isActive ? 'var(--accent-green)' : 'var(--text-muted)';
+        }
+    }
+    await adminFetch("/api/admin/toggle_project", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ project_id: id, is_active: isActive ? 1 : 0 })
+    });
+}
+
+async function toggleBankActive(bankId, isActive) {
+    await adminFetch("/api/admin/toggle_bank", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ bank_id: bankId, is_active: isActive })
+    });
+}
+
+async function moveBankUp(index) {
+    if (index === 0) return;
+    const banks = currentAdminData.banks;
+    [banks[index - 1], banks[index]] = [banks[index], banks[index - 1]];
+    await saveBankOrder(banks);
+}
+
+async function moveBankDown(index) {
+    const banks = currentAdminData.banks;
+    if (index === banks.length - 1) return;
+    [banks[index], banks[index + 1]] = [banks[index + 1], banks[index]];
+    await saveBankOrder(banks);
+}
+
+async function saveBankOrder(banks) {
+    const bankIds = banks.map(b => b.id);
+    await adminFetch("/api/admin/reorder_banks", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ bank_ids: bankIds })
+    });
+    renderAdminData(currentAdminData);
+}
+
+async function moveProjectUp(index) {
+    if (index === 0) return;
+    const projs = currentAdminData.projects;
+    [projs[index - 1], projs[index]] = [projs[index], projs[index - 1]];
+    await saveProjectOrder(projs);
+}
+
+async function moveProjectDown(index) {
+    const projs = currentAdminData.projects;
+    if (index === projs.length - 1) return;
+    [projs[index], projs[index + 1]] = [projs[index + 1], projs[index]];
+    await saveProjectOrder(projs);
+}
+
+async function saveProjectOrder(projs) {
+    const projIds = projs.map(p => p.id);
+    await adminFetch("/api/admin/reorder_projects", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ project_ids: projIds })
+    });
+    renderAdminData(currentAdminData);
+}
+
+
+function openEditBankModalByIndex(index) {
+    if (!currentAdminData || !currentAdminData.banks) return;
+    openEditBankModal(currentAdminData.banks[index]);
+}
+
+function openEditProjectModalByIndex(index) {
+    if (!currentAdminData || !currentAdminData.projects) return;
+    openEditProjectModal(currentAdminData.projects[index]);
+}
+
+function openEditBankModal(b) {
+    document.getElementById("editBankId").value = b.id;
+    document.getElementById("editBankName").value = b.name;
+    document.getElementById("editBankValue").value = b.value || "";
+    document.getElementById("editBankUrl").value = b.link_url || "";
+    document.getElementById("bankModal").classList.add("open");
+}
+
+function openAddBankModal() {
+    document.getElementById("editBankId").value = "";
+    document.getElementById("editBankName").value = "";
+    document.getElementById("editBankValue").value = "";
+    document.getElementById("editBankUrl").value = "";
+    document.getElementById("bankModal").classList.add("open");
+}
+
+async function saveBankDetails() {
+    const id = document.getElementById("editBankId").value;
+    const name = document.getElementById("editBankName").value.trim();
+    const value = document.getElementById("editBankValue").value.trim();
+    const link_url = document.getElementById("editBankUrl").value.trim();
+
+    if (!name) return alert("Введите название метода");
+
+    await adminFetch("/api/admin/save_bank", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: id ? parseInt(id) : null, name, value, link_url })
+    });
+    closeModal("bankModal");
+    verifyAndLoadAdmin();
+}
+
+async function toggleProjectActive(projId, isActive) {
+    await adminFetch("/api/admin/toggle_project", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ project_id: projId, is_active: isActive ? 1 : 0 })
+    });
+    verifyAndLoadAdmin();
+}
+
+async function toggleOwnProject(enabled) {
+    await adminFetch("/api/admin/set_own_project", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ enabled: enabled ? 1 : 0 })
+    });
+    verifyAndLoadAdmin();
+}
+
+async function saveOwnProjectSettings(btnEl) {
+    const btn = btnEl || event?.target?.closest('button');
+    const originalText = btn ? btn.innerHTML : '';
+    if (btn) btn.innerHTML = '<span class="material-symbols-rounded" style="font-size: 16px; vertical-align: middle; margin-right: 4px;">sync</span> Сохранение...';
+
+    const title = document.getElementById("ownProjectTitleInput").value.trim();
+    const minAmount = parseFloat(document.getElementById("ownProjectMinInput").value) || 250;
+    const enabled = document.getElementById("ownProjectEnabledCheck").checked ? 1 : 0;
+    const link = document.getElementById("ownProjectLinkInput") ? document.getElementById("ownProjectLinkInput").value.trim() : "";
+
+    await adminFetch("/api/admin/set_own_project", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+            enabled: enabled,
+            title: title || "Предложить свой",
+            min_amount: minAmount,
+            link: link
+        })
+    });
+
+    if (btn) {
+        btn.innerHTML = '<span class="material-symbols-rounded" style="font-size: 16px; vertical-align: middle; margin-right: 4px;">check</span> Настройки сохранены!';
+        btn.style.background = '#10B981';
+        btn.style.color = '#fff';
+        setTimeout(() => {
+            btn.innerHTML = originalText;
+            btn.style.background = '#d4af37';
+            btn.style.color = '#000';
+        }, 2000);
+    }
+    verifyAndLoadAdmin();
+}
+
+async function saveManifestSettings(btnEl) {
+    const btn = btnEl || event?.target?.closest('button');
+    const originalText = btn ? btn.innerHTML : '';
+    if (btn) btn.innerHTML = '<span class="material-symbols-rounded" style="font-size: 16px; vertical-align: middle; margin-right: 4px;">sync</span> Сохранение...';
+
+    const title = document.getElementById("manifestTitleInput").value.trim();
+    const text = document.getElementById("manifestTextInput").value.trim();
+
+    await adminFetch("/api/admin/set_feedback_manifest", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+            title: title || "Мы ценим ваш вклад",
+            text: text
+        })
+    });
+
+    if (btn) {
+        btn.innerHTML = '<span class="material-symbols-rounded" style="font-size: 16px; vertical-align: middle; margin-right: 4px;">check</span> Текст сохранен!';
+        btn.style.background = '#10B981';
+        btn.style.color = '#fff';
+        setTimeout(() => {
+            btn.innerHTML = originalText;
+            btn.style.background = 'var(--primary)';
+            btn.style.color = '#fff';
+        }, 2000);
+    }
+    verifyAndLoadAdmin();
+}
+
+async function saveAnonTitle() {
+    const title = document.getElementById("anonTitleInput").value.trim();
+    if (!title) return alert("Введите название");
+    await adminFetch("/api/admin/set_anon_title", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title: title })
+    });
+    // alert removed
+    verifyAndLoadAdmin();
+}
+
+function openAddProjectModal() {
+    document.getElementById("projectModalTitle").innerText = "Добавить проект";
+    document.getElementById("saveProjectBtn").innerText = "Создать проект";
+    document.getElementById("editProjId").value = "";
+    if (document.getElementById("newProjCategory")) document.getElementById("newProjCategory").value = "investment";
+    document.getElementById("newProjName").value = "";
+    document.getElementById("newProjCode").value = "";
+    document.getElementById("newProjMin").value = "";
+    document.getElementById("newProjDesc").value = "";
+    document.getElementById("newProjPaymentLink").value = "";
+    document.getElementById("newProjActive").checked = true;
+    document.getElementById("projectModal").classList.add("open");
+}
+
+function openEditProjectModal(p) {
+    document.getElementById("projectModalTitle").innerText = "Изменить проект";
+    document.getElementById("saveProjectBtn").innerText = "Сохранить";
+    document.getElementById("editProjId").value = p.id;
+    if (document.getElementById("newProjCategory")) document.getElementById("newProjCategory").value = p.category || "investment";
+    document.getElementById("newProjName").value = p.name;
+    document.getElementById("newProjCode").value = p.code;
+    document.getElementById("newProjMin").value = p.min_amount || "";
+    document.getElementById("newProjDesc").value = p.description || "";
+    document.getElementById("newProjPaymentLink").value = p.payment_link || "";
+    document.getElementById("newProjActive").checked = p.is_active !== 0 && p.is_active !== false;
+    document.getElementById("projectModal").classList.add("open");
+}
+
+async function saveProject() {
+    const id = document.getElementById("editProjId").value;
+    const name = document.getElementById("newProjName").value.trim();
+    const code = document.getElementById("newProjCode").value.trim().toUpperCase();
+    const min_amount = parseFloat(document.getElementById("newProjMin").value) || 100;
+    const description = document.getElementById("newProjDesc").value.trim();
+    const payment_link = document.getElementById("newProjPaymentLink").value.trim();
+    const is_active = document.getElementById("newProjActive").checked ? 1 : 0;
+
+    if (!name || !code) { alert("Заполните название и код"); return; }
+
+    const categoryEl = document.getElementById("newProjCategory");
+    const category = categoryEl ? categoryEl.value : "investment";
+    const endpoint = id ? "/api/admin/edit_project" : "/api/admin/add_project";
+    const payload = { name, code, min_amount, description, payment_link, is_active, category };
+    if (id) payload.project_id = parseInt(id);
+
+    await adminFetch(endpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+    });
+    closeModal("projectModal");
+    verifyAndLoadAdmin();
+}
+
+async function deleteProject(projId) {
+    if (!confirm("Удалить проект?")) return;
+    await adminFetch("/api/admin/delete_project", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ project_id: projId })
+    });
+    verifyAndLoadAdmin();
+}
+
+async function updateTxStatus(txId, status) {
+    await adminFetch("/api/admin/update_tx_status", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ tx_id: txId, status })
+    });
+    verifyAndLoadAdmin();
+}
+
+function closeModal(id) {
+    document.getElementById(id).classList.remove("open");
+}
+</script>
+</body>
+</html>
