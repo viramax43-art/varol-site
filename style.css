@@ -519,6 +519,8 @@
         .qrcode-box { padding: 12px; background: #FFFFFF; border-radius: 16px; box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5); }
         
         .footer { text-align: center; font-size: 12px; color: var(--text-muted); margin-top: 28px; opacity: 0; animation: staggeredRise 0.6s ease-out 0.9s forwards; }
+        .footer-mail { color: var(--accent-glow); text-decoration: none; display: inline-block; margin-top: 6px; }
+        .footer-mail:hover { text-decoration: underline; }
         .form-row { display: flex; gap: 14px; }
         .flex-1 { flex: 1; }
         @media (max-width: 600px) {
