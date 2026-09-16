@@ -1,0 +1,9 @@
+Traceback (most recent call last):
+  File "/opt/varol/bot.py", line 20, in <module>
+    bot = Bot(token=BOT_TOKEN)
+  File "/opt/varol/venv/lib/python3.14/site-packages/aiogram/client/bot.py", line 304, in __init__
+    validate_token(token)
+    ~~~~~~~~~~~~~~^^^^^^^
+  File "/opt/varol/venv/lib/python3.14/site-packages/aiogram/utils/token.py", line 27, in validate_token
+    raise TokenValidationError(msg)
+aiogram.utils.token.TokenValidationError: Token is invalid!
